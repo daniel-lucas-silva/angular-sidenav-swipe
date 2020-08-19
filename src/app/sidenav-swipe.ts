@@ -1,27 +1,35 @@
-import {Component, ViewChild, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy} from '@angular/core';
-import {FormControl} from '@angular/forms';
-import { SwipeInfo } from './swipe-info.interface';
-import { MatSidenav } from '@angular/material/sidenav';
+import {
+  Component,
+  ViewChild,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  OnDestroy
+} from "@angular/core";
+import { FormControl } from "@angular/forms";
+import { SwipeInfo } from "./swipe-info.interface";
+import { MatSidenav } from "@angular/material/sidenav";
 
 /** @title Sidenav with configurable mode */
 @Component({
-  selector: 'sidenav-swipe',
-  templateUrl: 'sidenav-swipe.html',
-  styleUrls: ['sidenav-swipe.css'],
+  selector: "sidenav-swipe",
+  templateUrl: "sidenav-swipe.html",
+  styleUrls: ["sidenav-swipe.css"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SidenavSwipe implements AfterViewInit, OnDestroy {
-  @ViewChild('sidenav') sideNav: MatSidenav;
+  @ViewChild("sidenav") sideNav: MatSidenav;
 
   disableAnimation = false;
 
   private isIosDevice =
-    typeof window !== 'undefined' &&
+    typeof window !== "undefined" &&
     window.navigator &&
     window.navigator.platform &&
     (/iP(ad|hone|od)/.test(window.navigator.platform) ||
-      (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1));
-  
+      (window.navigator.platform === "MacIntel" &&
+        window.navigator.maxTouchPoints > 1));
+
   private readonly swipeInfo: SwipeInfo = {
     x1: 0,
     y1: 0,
@@ -37,23 +45,39 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
   private touchMoveHandler = this.bodyTouchMove.bind(this);
   private touchEndHandler = this.bodyTouchEnd.bind(this);
   private transitionEndHandler = this.resetDrawer.bind(this);
+  private closeTransitionHandler = this.closeTransition.bind(this);
 
-  constructor(private cd: ChangeDetectorRef){
-    window.document.body.addEventListener('touchstart', this.touchStartHandler);
-    window.document.body.addEventListener('touchmove', this.touchMoveHandler, { passive: !this.isIosDevice });
-    window.document.body.addEventListener('touchend', this.touchEndHandler);
+  constructor(private cd: ChangeDetectorRef) {
+    window.document.body.addEventListener("touchstart", this.touchStartHandler);
+    window.document.body.addEventListener("touchmove", this.touchMoveHandler, {
+      passive: !this.isIosDevice
+    });
+    window.document.body.addEventListener("touchend", this.touchEndHandler);
   }
 
   ngAfterViewInit() {
-    this.backdropEl = document.querySelector('.mat-drawer-backdrop');
-    this.drawerEl = document.getElementById('drawer');
+    this.backdropEl = document.querySelector(".mat-drawer-backdrop");
+    this.drawerEl = document.getElementById("drawer");
   }
 
   ngOnDestroy() {
-    window.document.body.removeEventListener('touchstart', this.touchStartHandler);
-    window.document.body.removeEventListener('touchmove', this.touchMoveHandler);
-    window.document.body.removeEventListener('touchend', this.touchEndHandler);
-    this.drawerEl.removeEventListener('transitionend', this.transitionEndHandler);
+    window.document.body.removeEventListener(
+      "touchstart",
+      this.touchStartHandler
+    );
+    window.document.body.removeEventListener(
+      "touchmove",
+      this.touchMoveHandler
+    );
+    window.document.body.removeEventListener("touchend", this.touchEndHandler);
+    this.drawerEl.removeEventListener(
+      "transitionend",
+      this.transitionEndHandler
+    );
+    this.drawerEl.removeEventListener(
+      "transitionend",
+      this.closeTransitionHandler
+    );
   }
 
   private bodyTouchStart(event: TouchEvent) {
@@ -64,6 +88,7 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
     this.swipeInfo.y2 = 0;
     this.swipeInfo.scrolling = null;
     this.swipeInfo.manual = false;
+    console.log("bodyTouchStart");
   }
 
   /**
@@ -85,7 +110,10 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
 
     // check if we have decided if the user is scrolling or not
     if (this.swipeInfo.scrolling === null) {
-      if (Math.abs(this.swipeInfo.y2 - this.swipeInfo.y1) > 5) {
+      if (
+        this.swipeInfo.x2 > 70 ||
+        Math.abs(this.swipeInfo.y2 - this.swipeInfo.y1) > 5
+      ) {
         // if the user has moved more than 5 pixels y then they're scrolling
         this.swipeInfo.scrolling = true;
         return;
@@ -95,7 +123,7 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
         // if the user has moved more than 5 pixels x then they're swiping
         this.swipeInfo.scrolling = false;
         // disable scrolling
-        window.document.body.classList.add('lock-scroll');
+        window.document.body.classList.add("lock-scroll");
         if (this.isIosDevice) {
           // css overflow:hidden doesn't work on the body for iOS so we have to use a non-passive listener and preventdefault to prevent scrolling
           event.preventDefault();
@@ -105,7 +133,7 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
 
     // the user is swiping
     // ignore swiping if the menu is not over
-    if (this.sideNav.mode !== 'over') {
+    if (this.sideNav.mode !== "over") {
       return;
     }
 
@@ -133,15 +161,17 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
       this.drawerEl.style.boxShadow = null;
     }
 
-    this.drawerEl.style.visibility = 'visible';
+    this.drawerEl.style.visibility = "visible";
     // update translate3d of sidenav by offset so the drawer moves
     this.drawerEl.style.transform = `translate3d(${translate}px, 0, 0)`;
     // update the opacity of the background so it fades in/out while the drawer moves
-    this.backdropEl.style.visibility = 'visible';
-    this.backdropEl.style.backgroundColor = `rgba(0,0,0,${(0.6 * Math.abs(offset + (this.sideNav.opened ? this.sideNav._width : 0)) / this.sideNav._width)})`;
+    this.backdropEl.style.visibility = "visible";
+    this.backdropEl.style.backgroundColor = `rgba(0,0,0,${(0.6 *
+      Math.abs(offset + (this.sideNav.opened ? this.sideNav._width : 0))) /
+      this.sideNav._width})`;
 
     // disable backdrop transition while we're dragging to prevent lag
-    this.backdropEl.style.transitionDuration = '0ms';
+    this.backdropEl.style.transitionDuration = "0ms";
   }
 
   private bodyTouchEnd(event: TouchEvent) {
@@ -152,36 +182,47 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
     // decide if we need to hide or show the sidenav
     if (this.swipeInfo.scrolling === false) {
       // enable scrolling again
-      window.document.body.classList.remove('lock-scroll');
+      window.document.body.classList.remove("lock-scroll");
       // restore backdrop transition
       this.backdropEl.style.transitionDuration = null;
 
       // if the menu is not over then ignore
-      if (this.sideNav.mode !== 'over') {
+      if (this.sideNav.mode !== "over") {
         return;
       }
 
       const offset = this.swipeInfo.x2 - this.swipeInfo.x1;
       // if the offset is < 0 and the sidenav is not open then ignore it
       // if the offset is > 0 and the sideNav is open then ignore it
-      if ((offset < 0 && !this.sideNav.opened) || (offset > 0 && this.sideNav.opened)) {
+      if (
+        (offset < 0 && !this.sideNav.opened) ||
+        (offset > 0 && this.sideNav.opened)
+      ) {
         return;
       }
 
       // is the offset < 50% of width then ignore and reset position
-      if (Math.abs(this.swipeInfo.x2 - this.swipeInfo.x1) < this.sideNav._width * 0.5) {
+      if (
+        Math.abs(this.swipeInfo.x2 - this.swipeInfo.x1) <
+        this.sideNav._width * 0.5
+      ) {
         this.backdropEl.style.visibility = null;
         if (this.sideNav.opened) {
           // reset drawer position
-          this.drawerEl.style.transform = 'none';
+          this.drawerEl.style.transform = "none";
           // reset background opacity
-          this.backdropEl.style.backgroundColor = 'rgba(0,0,0,0.6)';
+          this.backdropEl.style.backgroundColor = "rgba(0,0,0,0.6)";
         } else {
           // reset drawer position
-          this.drawerEl.style.transform = null;
+          this.drawerEl.style.transitionDuration = "400ms";
+          this.drawerEl.style.transform = `translate3d(-100%, 0, 0)`;
           // reset background opacity
           this.backdropEl.style.backgroundColor = null;
-          this.drawerEl.style.boxShadow = 'none';
+          this.drawerEl.style.boxShadow = "none";
+          this.drawerEl.addEventListener(
+            "transitionend",
+            this.closeTransitionHandler
+          );
         }
         return;
       }
@@ -193,10 +234,14 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
       this.disableAnimation = true;
       this.cd.markForCheck();
       // wait for the end of the transition so we can reset anything we hacked to make this work
-      this.drawerEl.addEventListener('transitionend', this.transitionEndHandler);
+      this.drawerEl.addEventListener(
+        "transitionend",
+        this.transitionEndHandler
+      );
       // wait one frame for the handler to be established before setting the transition
       requestAnimationFrame(() => {
-        this.drawerEl.style.transition = '400ms cubic-bezier(0.25, 0.8, 0.25, 1)';
+        this.drawerEl.style.transition =
+          "400ms cubic-bezier(0.25, 0.8, 0.25, 1)";
         this.cd.markForCheck();
         if (this.sideNav.opened) {
           // update translate3d of sidenav so that it animates closed
@@ -205,30 +250,41 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
           // update the transform on the sidenav so that it animates open
           this.drawerEl.style.transform = `none`;
           // reset background opacity
-          this.backdropEl.style.backgroundColor = 'rgba(0,0,0,0.6)';
+          this.backdropEl.style.backgroundColor = "rgba(0,0,0,0.6)";
         }
       });
     }
   }
 
+  private closeTransition() {
+    this.drawerEl.removeEventListener(
+      "transitionend",
+      this.closeTransitionHandler
+    );
+    this.drawerEl.style.transitionDuration = null;
+  }
+
   private resetDrawer() {
-    this.drawerEl.removeEventListener('transitionend', this.transitionEndHandler);
+    this.drawerEl.removeEventListener(
+      "transitionend",
+      this.transitionEndHandler
+    );
 
     this.backdropEl.style.visibility = null;
     if (this.sideNav.opened) {
       // make the backdrop hide as if the sidenav is closed
-      this.backdropEl.classList.remove('mat-drawer-shown');
+      this.backdropEl.classList.remove("mat-drawer-shown");
       // reset the backgroundColor override we set so it will work normally in the future
       this.backdropEl.style.backgroundColor = null;
       // reset the transition and transform properties so the sidenav doesn't get confused when it closes
       this.drawerEl.style.transition = null;
-      this.drawerEl.style.transform = 'none';
+      this.drawerEl.style.transform = "none";
 
       // update the sidenav state to closed
       this.sideNav.toggle(false);
     } else {
       // make the backdrop show as if the sidenav is open
-      this.backdropEl.classList.add('mat-drawer-shown');
+      this.backdropEl.classList.add("mat-drawer-shown");
       // reset the backgroundColor override we set so it will work normally in the future
       this.backdropEl.style.backgroundColor = null;
       // reset the transition and transform properties so the sidenav doesn't get confused when it closes
@@ -246,9 +302,6 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
     });
   }
 }
-
-
-
 
 /**  Copyright 2020 Google LLC. All Rights Reserved.
     Use of this source code is governed by an MIT-style license that
