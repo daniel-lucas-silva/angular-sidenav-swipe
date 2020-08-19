@@ -1,0 +1,9 @@
+<mat-sidenav-container class="example-container" [@.disabled]="disableAnimation">
+  <mat-sidenav #sidenav id="drawer" mode="over">
+    <p><button mat-button (click)="sidenav.toggle()">Toggle</button></p>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <p><button mat-button (click)="sidenav.toggle()">Toggle</button></p>
+  </mat-sidenav-content>
+</mat-sidenav-container>
