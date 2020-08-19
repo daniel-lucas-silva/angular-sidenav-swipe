@@ -98,6 +98,7 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
    * Touch end cleans up the scroll disabling.
    * @param event
    */
+  
   private bodyTouchMove(event: TouchEvent) {
     if (this.swipeInfo.scrolling) {
       // if we're scrolling then ignore these events
@@ -110,8 +111,9 @@ export class SidenavSwipe implements AfterViewInit, OnDestroy {
 
     // check if we have decided if the user is scrolling or not
     if (this.swipeInfo.scrolling === null) {
+      console.log(this.sideNav.opened);
       if (
-        this.swipeInfo.x2 > 70 ||
+        (this.swipeInfo.x2 > 70 && !this.sideNav.opened) ||
         Math.abs(this.swipeInfo.y2 - this.swipeInfo.y1) > 5
       ) {
         // if the user has moved more than 5 pixels y then they're scrolling
